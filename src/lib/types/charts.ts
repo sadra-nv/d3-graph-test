@@ -5,3 +5,5 @@ export interface ChartData {
   title: string;
   data: SingleSeriesPoint[] | MultiSeriesPoint[];
 }
+
+export type LabeledChartData = { label: "multi" | "single" } & ChartData;

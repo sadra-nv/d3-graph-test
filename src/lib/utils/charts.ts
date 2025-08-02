@@ -6,7 +6,7 @@ import type {
 } from "../types/charts";
 
 type AxisOptions = {
-  svg: d3.Selection<SVGSVGElement | null, unknown, null, undefined>;
+  svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
   x: d3.ScaleLinear<number, number>;
   y: d3.ScaleLinear<number, number>;
   width: number;

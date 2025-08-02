@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import type { MultiSeriesPoint } from "../../lib/types/charts";
 import { renderStyledAxes } from "../../lib/utils/charts";
+import { useContainerDimensions } from "../../hooks/useContainerDimensions";
 
 type Props = {
   data: MultiSeriesPoint[];
@@ -10,14 +11,15 @@ type Props = {
 const colors = ["blue", "green", "red"];
 
 export default function MultiSeriesChart({ data }: Props) {
-  const ref = useRef<SVGSVGElement | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+
+  const { containerRef, dimensions } = useContainerDimensions<HTMLDivElement>();
 
   useEffect(() => {
-    const width = 400;
-    const height = 200;
-    const margin = { top: 10, right: 10, bottom: 30, left: 40 };
+    const { width, height } = dimensions;
 
-    const svg = d3.select(ref.current);
+    const margin = { top: 10, right: 10, bottom: 30, left: 40 };
+    const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
 
     const seriesCount = data[0][1].length;
@@ -28,7 +30,6 @@ export default function MultiSeriesChart({ data }: Props) {
       .range([margin.left, width - margin.right]);
 
     const allYValues: number[] = [];
-
     for (let i = 0; i < seriesCount; i++) {
       allYValues.push(
         ...(data.map((d) => d[1][i]).filter((v) => v !== null) as number[])
@@ -69,7 +70,17 @@ export default function MultiSeriesChart({ data }: Props) {
       .call(d3.axisLeft(y));
 
     renderStyledAxes({ height, margin, svg, width, x, y });
-  }, [data]);
+  }, [data, dimensions]);
 
-  return <svg ref={ref} width={400} height={200} />;
+  return (
+    <div ref={containerRef}>
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
+        preserveAspectRatio="xMidYMid meet"
+        width={dimensions.width}
+        height={dimensions.height}
+      />
+    </div>
+  );
 }

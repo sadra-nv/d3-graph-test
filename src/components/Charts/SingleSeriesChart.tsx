@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { renderStyledAxes } from "../../lib/utils/charts";
+import { useContainerDimensions } from "../../hooks/useContainerDimensions";
 
 type Props = {
   data: [number, number | null][];
@@ -9,14 +10,15 @@ type Props = {
 export default function SingleSeriesChart({ data }: Props) {
   const ref = useRef<SVGSVGElement | null>(null);
 
+  const { containerRef, dimensions } = useContainerDimensions<HTMLDivElement>();
+
   useEffect(() => {
     const filtered = data.filter(([, value]) => value !== null) as [
       number,
       number
     ][];
 
-    const width = 400;
-    const height = 200;
+    const { width, height } = dimensions;
     const margin = { top: 10, right: 10, bottom: 30, left: 40 };
 
     const svg = d3.select(ref.current);
@@ -46,7 +48,17 @@ export default function SingleSeriesChart({ data }: Props) {
       .attr("d", line);
 
     renderStyledAxes({ height, margin, svg, width, x, y });
-  }, [data]);
+  }, [data, dimensions]);
 
-  return <svg ref={ref} width={400} height={200} />;
+  return (
+    <div ref={containerRef}>
+      <svg
+        ref={ref}
+        width={dimensions.width}
+        height={dimensions.height}
+        viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
+        preserveAspectRatio="xMidYMid meet"
+      />
+    </div>
+  );
 }

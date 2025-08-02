@@ -1,35 +1,52 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import ChartContainer from "./components/Charts/ChartContainer";
+import type { ChartData } from "./lib/types/charts";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [charts, setCharts] = useState<ChartData[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Im fetching the data from public folder instead of importing, for smaller bundle size and its also closer to the real world scenario, there i would use swr or react-query
+  useEffect(() => {
+    setIsLoading(true);
+    fetch("/data.json")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch data.json");
+        return res.json();
+      })
+      .then((json) => {
+        setCharts(json as ChartData[]);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError("Unknowen Error, unable to load chart data.");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
+
+  if (error)
+    return (
+      <section>
+        <p>{error}</p>
+      </section>
+    );
+
+  if (isLoading)
+    return (
+      <section>
+        <p>Loading charts data...</p>
+      </section>
+    );
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <section>
+      {charts.map((chart, i) => (
+        <ChartContainer key={i} chart={chart} />
+      ))}
+    </section>
+  );
 }
-
-export default App
